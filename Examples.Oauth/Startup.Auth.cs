@@ -1,8 +1,11 @@
 ﻿using Examples.Oauth.EF;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -20,8 +23,7 @@ namespace Examples.Oauth
            {
                // Configure OpenIddict to use the Entity Framework Core stores and models.
                // Note: call ReplaceDefaultEntities() to replace the default entities.
-               options.UseEntityFrameworkCore()
-                     .UseDbContext<SampleDbContext>();
+               options.UseEntityFrameworkCore().UseDbContext<SampleDbContext>();
            })
 
            // Register the OpenIddict server components.
@@ -34,11 +36,28 @@ namespace Examples.Oauth
                options.SetTokenEndpointUris("/connect/token");
 
                // Enable the client credentials flow.
-               options.AllowPasswordFlow().AllowRefreshTokenFlow();
+               options.AllowPasswordFlow()
+               .AllowRefreshTokenFlow();
 
-               // Register the signing and encryption credentials.
-               options.AddDevelopmentEncryptionCertificate()
-                    .AddDevelopmentSigningCertificate();
+               if (Environment.IsDevelopment())
+               {
+                   // Register the signing and encryption credentials.
+                   options.AddDevelopmentEncryptionCertificate()
+                        .AddDevelopmentSigningCertificate();
+                   //.DisableAccessTokenEncryption();
+               }
+               else
+               {
+                   var drive = Path.Combine("base", "App_Data", "secured.txt");
+                   var path = Path.Combine(Environment.ContentRootPath, "AuthSample.pfx");
+                   byte[] rawData = File.ReadAllBytes(path);
+
+                   var x509Certificate = new X509Certificate2(rawData, "micr0s0ft_", X509KeyStorageFlags.MachineKeySet 
+                       | X509KeyStorageFlags.Exportable);
+
+                   options.AddEncryptionCertificate(x509Certificate)
+                   .AddSigningCertificate(x509Certificate);
+               }
 
                // Register the ASP.NET Core host and configure the ASP.NET Core options.
                options.UseAspNetCore()

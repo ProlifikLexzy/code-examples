@@ -53,7 +53,7 @@ namespace Examples.Oauth
                     DisplayName = "My client application",
                     Permissions =
                 {
-                    Permissions.Endpoints.Token,
+                       Permissions.Endpoints.Token,
                        Permissions.GrantTypes.Password,
                        Permissions.GrantTypes.RefreshToken,
                        Permissions.Scopes.Email,

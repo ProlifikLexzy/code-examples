@@ -42,6 +42,7 @@ namespace Examples.Oauth.Controllers
                 TokenValidationParameters.DefaultAuthenticationType,
                 Claims.Name, Claims.Role);
 
+
             // Use the client_id as the subject identifier.
             identity.AddClaim(Claims.Subject,
                 await _applicationManager.GetClientIdAsync(application),
@@ -51,6 +52,8 @@ namespace Examples.Oauth.Controllers
                 await _applicationManager.GetDisplayNameAsync(application),
                 Destinations.AccessToken, Destinations.IdentityToken);
 
+
+            return Ok("Hello World");
             return SignIn(new ClaimsPrincipal(identity),
                 OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
